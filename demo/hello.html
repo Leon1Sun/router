@@ -1,0 +1,34 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <title>router</title>
+    <style type="text/css">
+        span.red{
+            color: red;
+        }
+    </style>
+</head>
+<body>
+<header>
+    <div>
+        <a href="#view1">view1</a>
+        <a href="#view2">view2</a>
+        <a href="#view3">view3</a>
+    </div>
+</header>
+<div rt-view>
+    原始内容
+</div>
+
+<script type="text/javascript" src="../dist/router.min.js"></script>
+<script type="text/javascript">
+    var rooter = new Router();
+    rooter.$when("view1","yyyyy","console.log('a')");
+    rooter.$when("view2",
+        "<div id='v2'><span>view2</span></div>",
+        "document.getElementById('v2').innerHTML = 'change'");
+    rooter.$whenUrl("view3","template/template.html?v=1","js/script.js");
+</script>
+</body>
+</html>
