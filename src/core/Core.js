@@ -3,8 +3,8 @@
  */
 
 const util = require("./../util/Util");
-const RouteMap = require("./RouteMap").RouteMap;
-const RouteConfig = require("./RouteMap").RouteConfig;
+const RouteMap = require("./RouteMap");
+const RouteConfig = require("./RouteConfig");
 let CoreInstance = (() => {
     let instance;
     return (newInstance) => {
@@ -13,7 +13,7 @@ let CoreInstance = (() => {
     }
 })();
 class RouterCore {
-    constructor(tagName) {
+    constructor(tagName="rt-view") {
         //single instance
         if (CoreInstance()) return CoreInstance();
         //end
@@ -42,7 +42,7 @@ class RouterCore {
             window.onhashchange = (e) => {
                 this.$$refreshView(location.hash);
             };
-            console.debug("bind success")
+            console.debug("bind tag : "+tagName+" success")
         })();
 
         //init
@@ -56,17 +56,17 @@ class RouterCore {
         let _self = this;
         if (this.routeMap.contains(newHash)) {
             //更新template
-            this.routeMap.getAsync(newHash, (config) => {
+            this.routeMap.getAsync(newHash).then((config) => {
                 _self.rootEle.innerHTML = config.template;
                 _self.oldHash = newHash;
-
                 _self.$$clearScript(newHash);
                 _self.$$evalScript(newHash);
+            }).then(() => {
                 if (!isInit) {
                     //如果不是第一次加载，则通过新旧值检查
                     //旧模板html发生变化
-                    _self.routeMap.getAsync(_self.oldHash, (oldConfig) => {
-                        oldConfig.template = _self.rootEle.innerHTML
+                    _self.routeMap.getAsync(_self.oldHash).then((config) => {
+                        config.template = _self.rootEle.innerHTML
                     });
                 }
             });
@@ -77,10 +77,10 @@ class RouterCore {
         }
     };
 
-    $$clearScript(anchor) {
-        for (let a in this.scriptManager) {
-            if (a != anchor) {
-                let sEle = (document) ? null : document.getElementById('s_' + a);
+    $$clearScript(hash) {
+        for (let scriptStr in this.scriptManager) {
+            if (scriptStr != hash) {
+                let sEle = (document) ? null : document.getElementById('s_' + scriptStr);
                 if (sEle) {
                     this.body.removeChild(sEle);
                 }
@@ -88,19 +88,19 @@ class RouterCore {
         }
     }
 
-    $$evalScript(anchor) {
+    $$evalScript(hash) {
         try {
             let _self = this;
-            this.routeMap.getAsync(anchor, (routerConfig) => {
+            this.routeMap.getAsync(hash).then((routerConfig) => {
                 let script = routerConfig.script || '';
                 //用eval会让一些注册事件一直存在
                 // eval('(' + script + ')');
                 let newScript = document.createElement('script');
-                newScript.id = "s_" + anchor;
+                newScript.id = "s_" + hash;
                 newScript.type = 'text/javascript';
                 newScript.innerHTML = script;
                 _self.body.appendChild(newScript);
-                _self.scriptManager[anchor] = script;
+                _self.scriptManager[hash] = script;
             });
 
         }
