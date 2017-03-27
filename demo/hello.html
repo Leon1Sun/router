@@ -24,11 +24,18 @@
 <script type="text/javascript" src="../dist/router.min.js"></script>
 <script type="text/javascript">
     var rooter = new Router();
-    rooter.$when("view1","yyyyy","console.log('a')");
-    rooter.$when("view2",
-        "<div id='v2'><span>view2</span></div>",
-        "document.getElementById('v2').innerHTML = 'change'");
-    rooter.$whenUrl("view3","template/template.html?v=1","js/script.js");
+    rooter.$when("view1",{
+        template:"yyyyy",
+        script:"console.log(1)"
+    });
+    rooter.$when("view2",{
+        template:"<div id='v2'><span>view2</span></div>",
+        script:"document.getElementById('v2').innerHTML = 'change'"
+    });
+    rooter.$when("view3",{
+        templateUrl:"template/template.html?v=1",
+        scriptUrl:"js/script.js"
+    });
 </script>
 </body>
 </html>
