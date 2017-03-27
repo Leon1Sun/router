@@ -1,7 +1,7 @@
 /**
  * Created by Leon on 17/3/27.
  */
-
+const RouteConfig = require("./RouteConfig");
 class RouteMap {
     constructor() {
         this.keys = [];
@@ -15,9 +15,9 @@ class RouteMap {
      * @returns {*}
      */
     getAsync(key) {
-        var index = this.keys.indexOf(key);
+        let index = this.keys.indexOf(key);
         if (index >= 0) {
-            var config = this.configs[index];
+            let config = this.configs[index];
             return config.async();
         }
         else {
@@ -30,7 +30,7 @@ class RouteMap {
             console.warn("config is not instanceof RouteConfig");
             return false;
         }
-        var index = this.keys.indexOf(key);
+        let index = this.keys.indexOf(key);
         if (index > 0) {
             this.configs[index] = config;
         }
@@ -42,6 +42,9 @@ class RouteMap {
 
     contains(key) {
         return this.keys.indexOf(key) >= 0;
+    }
+    size(){
+        return this.keys.length;
     }
 }
 module.exports = RouteMap;
