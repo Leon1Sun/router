@@ -2,10 +2,10 @@
  * Created by Leon on 17/3/27.
  */
 
-const util = require("./../util/WindowUtil");
+const util = require("./../util/Util");
 const RouteMap = require("./RouteMap").RouteMap;
 const RouteConfig = require("./RouteMap").RouteConfig;
-let CoreInstance =  (()=> {
+let CoreInstance = (() => {
     let instance;
     return (newInstance) => {
         if (newInstance) instance = newInstance;
@@ -19,10 +19,10 @@ class RouterCore {
         //end
 
         //get body elements
-        if(typeof(document)!="undefined"){
+        if (typeof(document) != "undefined") {
             this.body = document.getElementsByTagName("BODY")[0];
         }
-        else{
+        else {
             this.body = {};
         }
 
@@ -46,7 +46,7 @@ class RouterCore {
         })();
 
         //init
-        this.$$refreshView(location.hash,true);
+        this.$$refreshView(location.hash, true);
         //init single instance
         CoreInstance(this);
     };
@@ -56,20 +56,20 @@ class RouterCore {
         let _self = this;
         if (this.routeMap.contains(newHash)) {
             //更新template
-             this.routeMap.getAsync(newHash,(config)=>{
-                 _self.rootEle.innerHTML = config.template;
-                 _self.oldHash = newHash;
+            this.routeMap.getAsync(newHash, (config) => {
+                _self.rootEle.innerHTML = config.template;
+                _self.oldHash = newHash;
 
-                 _self.$$clearScript(newHash);
-                 _self.$$evalScript(newHash);
-                 if (!isInit) {
-                     //如果不是第一次加载，则通过新旧值检查
-                     //旧模板html发生变化
-                     _self.routeMap.getAsync(_self.oldHash,(oldConfig)=>{
-                         oldConfig.template = _self.rootEle.innerHTML
-                     });
-                 }
-             });
+                _self.$$clearScript(newHash);
+                _self.$$evalScript(newHash);
+                if (!isInit) {
+                    //如果不是第一次加载，则通过新旧值检查
+                    //旧模板html发生变化
+                    _self.routeMap.getAsync(_self.oldHash, (oldConfig) => {
+                        oldConfig.template = _self.rootEle.innerHTML
+                    });
+                }
+            });
 
         }
         else {
@@ -80,7 +80,7 @@ class RouterCore {
     $$clearScript(anchor) {
         for (let a in this.scriptManager) {
             if (a != anchor) {
-                let sEle = (document)?null:document.getElementById('s_' + a);
+                let sEle = (document) ? null : document.getElementById('s_' + a);
                 if (sEle) {
                     this.body.removeChild(sEle);
                 }
@@ -91,7 +91,7 @@ class RouterCore {
     $$evalScript(anchor) {
         try {
             let _self = this;
-            this.routeMap.getAsync(anchor,(routerConfig)=>{
+            this.routeMap.getAsync(anchor, (routerConfig) => {
                 let script = routerConfig.script || '';
                 //用eval会让一些注册事件一直存在
                 // eval('(' + script + ')');
@@ -110,9 +110,9 @@ class RouterCore {
     };
 
     $$when(key, configObj) {
-        let routeConfig = new RouteConfig(configObj.template,configObj.script,configObj.templateUrl,configObj.scriptUrl);
+        let routeConfig = new RouteConfig(configObj.template, configObj.script, configObj.templateUrl, configObj.scriptUrl);
         this.routeMap.set(key, routeConfig);
-        if (location.hash == ('#'+key)) {
+        if (location.hash == ('#' + key)) {
             this.$$refreshView(location.hash, true);
         }
 

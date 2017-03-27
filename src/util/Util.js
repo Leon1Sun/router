@@ -36,6 +36,27 @@ module.exports = {
         return new Promise((resolve, reject) => {
             resolve();
         })
+    },
+    getXPath: (tagName = "rt-view") => {
+        var xPath, rootEle;
+        if (document.evaluate) {
+            xPath = document.evaluate('//*[@' + tagName + ']', document);
+            rootEle = xPath.iterateNext();
+            if (!rootEle) {
+                throw ("can't find rt-view");
+            }
+            else {
+                return rootEle;
+            }
+        }
+        else if (document.selectNodes) {
+            xPath = document.selectNodes("//*[@rt-view]");
+            if (!xPath || !xPath.length || xPath.length <= 0) {
+                throw ("can't find rt-view");
+            }
+            else {
+                return xPath[0];
+            }
+        }
     }
-}
-;
+};
