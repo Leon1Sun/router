@@ -1,6 +1,20 @@
 'use strict';
 
 window.Router = (function () {
+    let CoreInstance = (function () {
+        let instance;
+        return (newInstance) => {
+            if (newInstance) instance = newInstance;
+            return instance;
+        }
+    }());
+    let RouterInstance = (function () {
+        let instance;
+        return (newInstance) => {
+            if (newInstance) instance = newInstance;
+            return instance;
+        }
+    }());
     class RouteConfig {
         constructor(template, script) {
             this.template = template || "";
@@ -44,6 +58,8 @@ window.Router = (function () {
     }
     class RouterCore {
         constructor(tagName) {
+            if (CoreInstance()) return CoreInstance();
+
             var getViewRoot = (tagName = "rt-view") => {
                 var xPath, rootEle;
                 if (document.evaluate) {
@@ -88,6 +104,7 @@ window.Router = (function () {
                 };
                 console.debug("bind success")
             })();
+            CoreInstance(this);
         };
 
         $$refreshView(newHash, isInit) {
@@ -149,50 +166,55 @@ window.Router = (function () {
 
         }
     }
-    function Router(tagName) {
-        let _r = new RouterCore(tagName);
-        let getResourcePromise = (url) => {
-            return new Promise(function (resolve, reject) {
-                var res;
-                var xhr = function () {
-                    if (window.XMLHttpRequest) {
-                        return new XMLHttpRequest();
-                    } else {
-                        return new ActiveObject('Micrsorf.XMLHttp');
-                    }
-                }();
+    class Router {
+        constructor(tagName) {
+            if (RouterInstance()) return RouterInstance();
+            let _r = new RouterCore(tagName);
+            let getResourcePromise = (url) => {
+                return new Promise(function (resolve, reject) {
+                    var res;
+                    var xhr = function () {
+                        if (window.XMLHttpRequest) {
+                            return new XMLHttpRequest();
+                        } else {
+                            return new ActiveObject('Micrsorf.XMLHttp');
+                        }
+                    }();
 
-                xhr.onreadystatechange = function () {
-                    switch (xhr.readyState) {
-                        case 3 :
-                            console.log(3, '正在接受部分响应.....');
-                            res = xhr.responseText;
-                            break;
-                        case 4 :
-                            if ((xhr.status >= 200 && xhr.status < 300) || xhr.status == 304) {
-                                resolve(res);
-                            } else {
-                                reject();
-                            }
-                            break;
+                    xhr.onreadystatechange = function () {
+                        switch (xhr.readyState) {
+                            case 3 :
+                                console.log(3, '正在接受部分响应.....');
+                                res = xhr.responseText;
+                                break;
+                            case 4 :
+                                if ((xhr.status >= 200 && xhr.status < 300) || xhr.status == 304) {
+                                    resolve(res);
+                                } else {
+                                    reject();
+                                }
+                                break;
+                        }
+                    };
+                    xhr.open('get', url);
+                    xhr.send(null);
+                });
+            };
+            this.$when = (key, template, script) => {
+                return _r.$$when(key, template, script);
+            };
+            this.$whenUrl = (key, templateUrl, scriptUrl) => {
+                var template, script;
+                Promise.all([getResourcePromise(templateUrl), getResourcePromise(scriptUrl)]).then(
+                    function (result) {
+                        template = result[0];
+                        script = result[1];
+                        _r.$$when(key, template, script);
                     }
-                };
-                xhr.open('get', url);
-                xhr.send(null);
-            });
-        };
-        this.$when = (key, template, script) => {
-            return _r.$$when(key, template, script);
-        };
-        this.$whenUrl = (key, templateUrl, scriptUrl) => {
-            var template, script;
-            Promise.all([getResourcePromise(templateUrl), getResourcePromise(scriptUrl)]).then(
-                function (result) {
-                    template = result[0];
-                    script = result[1];
-                    _r.$$when(key, template, script);
-                }
-            );
+                );
+            };
+            this.$hash = _r.tagName;
+            RouterInstance(this);
         }
     }
 
