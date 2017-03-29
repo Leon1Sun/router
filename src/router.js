@@ -9,7 +9,10 @@ window.Router = (() => {
     })();
     class Router {
         constructor(tagName) {
+            /*single instance*/
             if (RouterInstance()) return RouterInstance();
+
+            /*get core*/
             let RouterCore = require('./core/Core.js');
             let _r = new RouterCore(tagName);
 
@@ -17,7 +20,14 @@ window.Router = (() => {
              * _hash
              * 当前锚点名
              */
-            this._hash = _r.tagName;
+            this.$hash = "";
+            Object.defineProperty(this, '$hash', {
+                enumerable: true,
+                configurable: true,
+                get: function reactiveGetter() {
+                    return _r.oldHash;
+                }
+            });
             /**
              * 设置锚点名，与对应路由关系
              * @param key 锚点名
@@ -38,6 +48,34 @@ window.Router = (() => {
             this.$when = (key, routeConfig) => {
                 return _r.$$when(key, routeConfig);
             };
+            /**
+             * 已经设置的路由列表
+             * @type {Array}
+             */
+            this.$list = _r.routeMap.keys;
+            Object.defineProperty(this, '$list', {
+                enumerable: true,
+                configurable: true,
+                get: function reactiveSetter(newVal) {
+                    return _r.routeMap.keys;
+                }
+            });
+            /**
+             * 获得路由对应设置
+             * @param key
+             * @returns {*}
+             */
+            this.$getConfig = (key)=>{
+                let index = _r.routeMap.keys.indexOf(key);
+                if(index <0){
+                    return
+                }
+                else{
+                    return _r.routeMap.configs[index];
+                }
+            };
+
+            /*single instance*/
             RouterInstance(this);
         }
     }

@@ -13,14 +13,14 @@ let CoreInstance = (() => {
     }
 })();
 class RouterCore {
-    constructor(tagName="rt-view") {
+    constructor(tagName = "rt-view") {
         //single instance
         if (CoreInstance()) return CoreInstance();
         //end
-
+        let _self = this;
         //get body elements
-        if (typeof(document) != "undefined") {
-            this.body = document.getElementsByTagName("BODY")[0];
+        if (typeof(window.document) != "undefined") {
+            this.body = window.document.getElementsByTagName("BODY")[0];
         }
         else {
             this.body = {};
@@ -28,6 +28,7 @@ class RouterCore {
 
         //view tag name
         this.tagName = tagName;
+
         this.rootEle = util.getXPath(tagName);
         this.scriptManager = {};
 
@@ -35,24 +36,24 @@ class RouterCore {
         if (!this.routeMap.contains("")) {
             this.routeMap.set("", new RouteConfig(this.rootEle.innerHTML, ''));
         }
-        this.oldHash = location.hash.replace("#", '');
+        this.oldHash = window.location.hash.replace("#!", '');
 
         //add event listener
         (() => {
             window.onhashchange = (e) => {
-                this.$$refreshView(location.hash);
+                this.$$refreshView(window.location.hash);
             };
-            console.debug("bind tag : "+tagName+" success")
+            console.debug("bind tag : " + tagName + " success")
         })();
 
         //init
-        this.$$refreshView(location.hash, true);
+        this.$$refreshView(window.location.hash, true);
         //init single instance
         CoreInstance(this);
     };
 
     $$refreshView(newHash, isInit) {
-        newHash = newHash.replace("#", '');
+        newHash = newHash.replace("#!", '');
         let _self = this;
         if (this.routeMap.contains(newHash)) {
             //更新template
@@ -80,7 +81,7 @@ class RouterCore {
     $$clearScript(hash) {
         for (let scriptStr in this.scriptManager) {
             if (scriptStr != hash) {
-                let sEle = (document) ? null : document.getElementById('s_' + scriptStr);
+                let sEle = (window.document) ? null : window.document.getElementById('s_' + scriptStr);
                 if (sEle) {
                     this.body.removeChild(sEle);
                 }
@@ -95,7 +96,7 @@ class RouterCore {
                 let script = routerConfig.script || '';
                 //用eval会让一些注册事件一直存在
                 // eval('(' + script + ')');
-                let newScript = document.createElement('script');
+                let newScript = window.document.createElement('script');
                 newScript.id = "s_" + hash;
                 newScript.type = 'text/javascript';
                 newScript.innerHTML = script;
@@ -112,8 +113,8 @@ class RouterCore {
     $$when(key, configObj) {
         let routeConfig = new RouteConfig(configObj.template, configObj.script, configObj.templateUrl, configObj.scriptUrl);
         this.routeMap.set(key, routeConfig);
-        if (location.hash == ('#' + key)) {
-            this.$$refreshView(location.hash, true);
+        if (window.location.hash == ('#!' + key)) {
+            this.$$refreshView(window.location.hash, true);
         }
 
     }
