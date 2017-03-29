@@ -10,20 +10,34 @@
     </style>
 </head>
 <body>
-<header>
+
     <div>
+        <div>锚点模式</div>
         <a href="#!view1">view1</a>
         <a href="#!view2">view2</a>
         <a href="#!view3">view3</a>
     </div>
-</header>
+
+    <div rt-view1>
+        原始内容1
+    </div>
+    <div>
+        <div>非锚点模式</div>
+        <a href="javascript:click(1)" onclick="click(1)">view1</a>
+        <a href="javascript:click(2)" onclick="click(2)">view2</a>
+        <a href="javascript:click(3)" onclick="">view3</a>
+    </div>
+
 <div rt-view>
     原始内容
 </div>
 
 <script type="text/javascript" src="../dist/router.min.js"></script>
 <script type="text/javascript">
-    var rooter = new Router();
+    function click(index) {
+        rooter.$hash = "view"+index;
+    }
+    var rooter = new Router("rt-view",false);
     rooter.$when("view1",{
         template:"yyyyy",
         script:"console.log(1)"
@@ -33,6 +47,20 @@
         script:"document.getElementById('v2').innerHTML = 'change'"
     });
     rooter.$when("view3",{
+        templateUrl:"template/template.html?v=1",
+        scriptUrl:"js/script.js"
+    });
+
+    var rooter1 = new Router("rt-view1",true);
+    rooter1.$when("view1",{
+        template:"yyyyy",
+        script:"console.log(1)"
+    });
+    rooter1.$when("view2",{
+        template:"<div id='v2'><span>view2</span></div>",
+        script:"document.getElementById('v2').innerHTML = 'change'"
+    });
+    rooter1.$when("view3",{
         templateUrl:"template/template.html?v=1",
         scriptUrl:"js/script.js"
     });

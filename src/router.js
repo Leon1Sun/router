@@ -8,24 +8,31 @@ window.Router = (() => {
         }
     })();
     class Router {
-        constructor(tagName) {
-            /*single instance*/
-            if (RouterInstance()) return RouterInstance();
+        constructor(tagName, isAnchor) {
+            /*use single instance
+             * if isAnchor*/
+            if (isAnchor) {
+                if (RouterInstance()) return RouterInstance();
+            }
 
             /*get core*/
             let RouterCore = require('./core/Core.js');
-            let _r = new RouterCore(tagName);
+            this._r = new RouterCore(tagName, isAnchor);
 
             /**
              * _hash
              * 当前锚点名
              */
-            this.$hash = "";
+            this.$hash;//= this._r.oldHash;
+            var _self = this;
             Object.defineProperty(this, '$hash', {
                 enumerable: true,
                 configurable: true,
                 get: function reactiveGetter() {
-                    return _r.oldHash;
+                    return _self._r.oldHash;
+                },
+                set: function (value) {
+                    _self._r.oldHash = value;
                 }
             });
             /**
@@ -46,18 +53,18 @@ window.Router = (() => {
              * @returns {*}
              */
             this.$when = (key, routeConfig) => {
-                return _r.$$when(key, routeConfig);
+                return this._r.$$when(key, routeConfig);
             };
             /**
              * 已经设置的路由列表
              * @type {Array}
              */
-            this.$list = _r.routeMap.keys;
+            this.$list = this._r.routeMap.keys;
             Object.defineProperty(this, '$list', {
                 enumerable: true,
                 configurable: true,
                 get: function reactiveSetter(newVal) {
-                    return _r.routeMap.keys;
+                    return this._r.routeMap.keys;
                 }
             });
             /**
@@ -65,18 +72,20 @@ window.Router = (() => {
              * @param key
              * @returns {*}
              */
-            this.$getConfig = (key)=>{
-                let index = _r.routeMap.keys.indexOf(key);
-                if(index <0){
+            this.$getConfig = (key) => {
+                let index = this._r.routeMap.keys.indexOf(key);
+                if (index < 0) {
                     return
                 }
-                else{
-                    return _r.routeMap.configs[index];
+                else {
+                    return this._r.routeMap.configs[index];
                 }
             };
 
-            /*single instance*/
-            RouterInstance(this);
+            /*return single instance*/
+            if (isAnchor) {
+                RouterInstance(this);
+            }
         }
     }
 
