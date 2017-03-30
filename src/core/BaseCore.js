@@ -5,18 +5,10 @@
 const util = require("./../util/Util");
 const RouteMap = require("./RouteMap");
 const RouteConfig = require("./RouteConfig");
-// let CoreInstance = (() => {
-//     let instance;
-//     return (newInstance) => {
-//         if (newInstance) instance = newInstance;
-//         return instance;
-//     }
-// })();
+
 class RouterCore {
     constructor(tagName = "rt-view", isAnchor = true) {
         // remove single instance
-        // if (CoreInstance()) return CoreInstance();
-        //end
         let _self = this;
         this.isAnchor = isAnchor;
         //get body elements
@@ -34,47 +26,15 @@ class RouterCore {
         this.scriptManager = {};
 
         this.routeMap = new RouteMap();
-        if (!this.routeMap.contains("")) {
+        if (!this.routeMap.has("")) {
             this.routeMap.set("", new RouteConfig(this.rootEle.innerHTML, ''));
         }
-
-        //锚点监听
-        if (this.isAnchor) {
-            this.oldHash = window.location.hash.replace("#!", '');
-            //add event listener
-            (() => {
-                window.onhashchange = (e) => {
-                    this.$$refreshView(window.location.hash);
-                };
-                console.debug("bind tag : " + tagName + " success")
-            })();
-
-            //init
-            this.$$refreshView(window.location.hash, true);
-        }
-        else {
-            this.oldHash = "";
-            Object.defineProperty(this, "oldHash", {
-                enumerable: true,
-                configurable: true,
-                set: (newValue) => {
-                    if (newValue != this.value) {
-                        _self.$$refreshView(newValue,false,this.value || "");
-                        this.value = newValue;
-                    }
-                }
-            });
-
-        }
-        //reomove init single instance
-        // CoreInstance(this);
-        //end
     };
 
     $$refreshView(newHash, isInit,_oldHash) {
         newHash = newHash.replace("#!", '');
         let _self = this;
-        if (this.routeMap.contains(newHash)) {
+        if (this.routeMap.has(newHash)) {
             //更新template
             this.routeMap.getAsync(newHash).then((config) => {
                 _self.rootEle.innerHTML = config.template;
@@ -92,7 +52,10 @@ class RouterCore {
                 if (!isInit) {
                     //如果不是第一次加载，则通过新旧值检查
                     //旧模板html发生变化
-                    _self.routeMap.getAsync(_oldHash || _self.oldHash).then((config) => {
+                    if(!_oldHash && _self.oldHash){
+                        _oldHash = _self.oldHash;
+                    }
+                    _self.routeMap.getAsync(_oldHash).then((config) => {
                         config.template = _self.rootEle.innerHTML
                     });
                 }
@@ -139,16 +102,6 @@ class RouterCore {
     $$when(key, configObj) {
         let routeConfig = new RouteConfig(configObj.template, configObj.script, configObj.templateUrl, configObj.scriptUrl);
         this.routeMap.set(key, routeConfig);
-        if (this.isAnchor) {
-            if (window.location.hash == ('#!' + key)) {
-                this.$$refreshView(window.location.hash, true);
-            }
-        }
-        else {
-            if (this.oldHash == key) {
-                this.$$refreshView(key, true);
-            }
-        }
 
     }
 }

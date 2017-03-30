@@ -7,32 +7,41 @@ window.Router = (() => {
             return instance;
         }
     })();
+    let routers = new Map();
     class Router {
         constructor(tagName, isAnchor) {
+            let RouterCore;
             /*use single instance
              * if isAnchor*/
             if (isAnchor) {
                 if (RouterInstance()) return RouterInstance();
+                /*get core*/
+                RouterCore = require('./core/AnchorRouter');
+            }
+            else{
+                if (routers.has(tagName)){
+                    return routers.get(tagName)
+                }
+                /*get core*/
+                RouterCore = require('./core/NoAnchorRouter')
             }
 
-            /*get core*/
-            let RouterCore = require('./core/Core.js');
-            this._r = new RouterCore(tagName, isAnchor);
+
+            let _r = new RouterCore(tagName, isAnchor);
 
             /**
              * _hash
              * 当前锚点名
              */
-            this.$hash;//= this._r.oldHash;
-            var _self = this;
+            this.$hash;//= _r.oldHash;
             Object.defineProperty(this, '$hash', {
                 enumerable: true,
                 configurable: true,
-                get: function reactiveGetter() {
-                    return _self._r.oldHash;
+                get: ()=> {
+                    return _r.oldHash;
                 },
-                set: function (value) {
-                    _self._r.oldHash = value;
+                set: (value)=> {
+                    _r.oldHash = value;
                 }
             });
             /**
@@ -53,18 +62,18 @@ window.Router = (() => {
              * @returns {*}
              */
             this.$when = (key, routeConfig) => {
-                return this._r.$$when(key, routeConfig);
+                return _r.$$when(key, routeConfig);
             };
             /**
              * 已经设置的路由列表
              * @type {Array}
              */
-            this.$list = this._r.routeMap.keys;
+            this.$list = _r.routeMap.keys;
             Object.defineProperty(this, '$list', {
                 enumerable: true,
                 configurable: true,
-                get: function reactiveSetter(newVal) {
-                    return this._r.routeMap.keys;
+                get: ()=> {
+                    return _r.routeMap.keys;
                 }
             });
             /**
@@ -73,18 +82,17 @@ window.Router = (() => {
              * @returns {*}
              */
             this.$getConfig = (key) => {
-                let index = this._r.routeMap.keys.indexOf(key);
-                if (index < 0) {
-                    return
-                }
-                else {
-                    return this._r.routeMap.configs[index];
-                }
+                return _r.routeMap.get(key)
             };
 
             /*return single instance*/
             if (isAnchor) {
                 RouterInstance(this);
+            }
+            else{
+                if(!routers.has(tagName)){
+                    routers.set(tagName,this);
+                }
             }
         }
     }
