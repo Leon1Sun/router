@@ -4,47 +4,37 @@
 const RouteConfig = require("./RouteConfig");
 class RouteMap {
     constructor() {
-        this.keys = [];
-        this.configs = [];
-    };
-
-    /**
-     * 异步获取config
-     * 因为部分资源可能异步加载
-     * @param key
-     * @returns {*}
-     */
-    getAsync(key) {
-        let index = this.keys.indexOf(key);
-        if (index >= 0) {
-            let config = this.configs[index];
-            return config.async();
+        let map = new Map();
+        /**
+         * 异步获取config
+         * 因为部分资源可能异步加载
+         * @param key
+         * @returns {*}
+         */
+        this.getAsync = (key) => {
+            let config = map.get(key);
+            if (config) {
+                return config.async();
+            }
+            else {
+                return
+            }
+        };
+        this.get = (key) => {
+            return map.get(key);
         }
-        else {
-            return undefined
-        }
-    };
-
-    set(key, config) {
-        if (!config instanceof RouteConfig) {
-            console.warn("config is not instanceof RouteConfig");
-            return false;
-        }
-        let index = this.keys.indexOf(key);
-        if (index > 0) {
-            this.configs[index] = config;
-        }
-        else {
-            this.keys.push(key);
-            this.configs.push(config);
+        this.set = (key, config) => {
+            if (!config instanceof RouteConfig) {
+                console.warn("config is not instanceof RouteConfig");
+                return false;
+            }
+            map.set(key, config);
+        };
+        this.has = (key) => {
+            return map.has(key);
         }
     };
 
-    contains(key) {
-        return this.keys.indexOf(key) >= 0;
-    }
-    size(){
-        return this.keys.length;
-    }
+
 }
 module.exports = RouteMap;
